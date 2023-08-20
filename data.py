@@ -2,27 +2,30 @@ from constant import experiment_run
 from mne import concatenate_epochs, Epochs, events_from_annotations, pick_types
 from mne.datasets import eegbci
 from mne.channels import make_standard_montage
-from mne.io import read_raw_edf, RawEDF
+from mne.io import read_raw_edf, Raw
 from random import randint
 from sklearn.model_selection import train_test_split
-from sys import maxsize
 
 class EegbciData() :
     def __init__(self, subject : int, random_state : int =  None) :
         if not isinstance(subject, int) :
             raise ValueError("Subject is not an int.")
         self.subject = subject
-        self.rs = random_state if random_state else randint(0, maxsize)
+        self.rs = random_state if random_state else randint(0, 2**32 - 1)
         raw_fnames = eegbci.load_data(self.subject, range(1, 15))
         self.data_list = []
         montage = make_standard_montage("standard_1005")
         for index, f in enumerate(raw_fnames) :
             data = read_raw_edf(f, preload=True)
+            eegbci.standardize(data)
             data.set_montage(montage)
             data.filter(7.0, 30.0, fir_design="firwin", skip_by_annotation="edge")
-            self.data_list.append(self._normalize_epochs(data, index))
+            self.data_list.append(self._normalize_epochs(data, index + 1))
+
+    def get_exp_data(self, experiment) :
+        return self.data_list[experiment - 1]
     
-    def _normalize_epochs(self, data : RawEDF, index : int) :
+    def _normalize_epochs(self, data : Raw, index : int) :
         subepoch_duration = 2
         subepochs = []
         all_subepochs = []

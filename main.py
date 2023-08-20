@@ -4,7 +4,7 @@ from train import train
 
 def main() :
     valid_subjects = list(range(1, 110))  # Subjects from 1 to 109
-    valid_experiments = list(range(1, 7))
+    valid_experiments = list(range(3, 15))
     func_dict = {
         "plot" : plot,
         "train" : train
