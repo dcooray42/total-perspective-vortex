@@ -1,4 +1,5 @@
-from constant import experiment_run
+import numpy as np
+from constant import experiment_run, tasks
 from mne import concatenate_epochs, Epochs, events_from_annotations, pick_types
 from mne.datasets import eegbci
 from mne.channels import make_standard_montage
@@ -7,7 +8,7 @@ from random import randint
 from sklearn.model_selection import train_test_split
 
 class EegbciData() :
-    def __init__(self, subject : int, random_state : int =  None) :
+    def __init__(self, subject : int, random_state : int = None) :
         if not isinstance(subject, int) :
             raise ValueError("Subject is not an int.")
         self.subject = subject
@@ -22,8 +23,33 @@ class EegbciData() :
             data.filter(7.0, 30.0, fir_design="firwin", skip_by_annotation="edge")
             self.data_list.append(self._normalize_epochs(data, index + 1))
 
-    def get_exp_data(self, experiment) :
-        return self.data_list[experiment - 1]
+    def get_exp_data(self, task_num : int = None) :
+
+        def _get_data(x_train : np.ndarray,
+                      x_test : np.ndarray,
+                      y_train : np.ndarray,
+                      y_test : np.ndarray,
+                      exp_data) :
+            x_train.append(exp_data[0])
+            x_test.append(exp_data[1])
+            y_train.append(exp_data[2])
+            y_test.append(exp_data[3])
+
+        x_train = []
+        x_test = []
+        y_train = []
+        y_test = []
+        if task_num is not None :
+            for value in tasks[task_num] :
+                _get_data(x_train, x_test, y_train, y_test, self.data_list[value])
+        else :
+            for value in range(1, 15) :
+                _get_data(x_train, x_test, y_train, y_test, self.data_list[value])
+        return (np.concatenate(x_train),
+                np.concatenate(x_test),
+                np.concatenate(y_train),
+                np.concatenate(y_test))
+        
     
     def _normalize_epochs(self, data : Raw, index : int) :
         subepoch_duration = 2
@@ -51,9 +77,10 @@ class EegbciData() :
                                          reject=None,
                                          preload=True,
                                          reject_by_annotation=True,
-                                         verbose=True)
+                                         verbose="Error")
                 all_subepochs.append(subepoch_epochs)
             concat_epochs = concatenate_epochs(all_subepochs)
+            epochs_train = concat_epochs
             epochs_train = concat_epochs.copy().crop(tmin=1.0, tmax=2.0)
         else :
             tmin, tmax = -1.0, 4.0
@@ -69,7 +96,8 @@ class EegbciData() :
                                 reject=None,
                                 preload=True,
                                 reject_by_annotation=True,
-                                verbose=True)
+                                verbose="Error")
+            epochs_train = all_epochs
             epochs_train = all_epochs.copy().crop(tmin=1.0, tmax=2.0)
         labels = epochs_train.events[:, -1]
         return train_test_split(epochs_train.get_data(), labels, test_size=0.2, random_state=self.rs)

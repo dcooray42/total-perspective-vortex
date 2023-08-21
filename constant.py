@@ -73,3 +73,17 @@ experiment_run = {
     13 : exp_5,
     14 : exp_6
 }
+
+tasks = {
+    1 : [2, 6, 10],
+    2 : [3, 7, 11],
+    3 : [4, 8, 12],
+    4 : [5, 9, 13]
+}
+
+tasks_labels = {
+    1 : list(exp_3["event_id"].values()),
+    2 : list(exp_4["event_id"].values()),
+    3 : list(exp_5["event_id"].values()),
+    4 : list(exp_6["event_id"].values())
+}
