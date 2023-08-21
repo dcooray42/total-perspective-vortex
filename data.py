@@ -49,7 +49,6 @@ class EegbciData() :
                 np.concatenate(x_test),
                 np.concatenate(y_train),
                 np.concatenate(y_test))
-        
     
     def _normalize_epochs(self, data : Raw, index : int) :
         subepoch_duration = 2

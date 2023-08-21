@@ -24,6 +24,7 @@ def train(subject, task) :
     scores = cross_val_score(pipeline, x_train, y_train, cv=10, scoring="accuracy")
     print("Cross-validation scores:", scores)
     print("Mean accuracy:", np.mean(scores))
+    pipeline.fit(x_train, y_train)
     with open("models.pkl", "wb") as f:
         pickle.dump({
             "random_state" : data.rs,
