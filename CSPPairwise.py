@@ -1,13 +1,12 @@
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
-from mne.decoding import CSP
+from CSP import CommonSpatialPatterns
 
 class CSPPairwise(BaseEstimator, TransformerMixin) :
-    def __init__(self, class_pairs, n_components=4, log=True, csp_reg=None):
+    def __init__(self, class_pairs, n_components=4, log=True):
         self.class_pairs = class_pairs
         self.n_components = n_components
-        self.log=True
-        self.csp_reg = csp_reg
+        self.log=log
         self.csp_list = []
 
     def fit(self, X, y) :
@@ -16,7 +15,7 @@ class CSPPairwise(BaseEstimator, TransformerMixin) :
             subset_X = X[class_indices]
             subset_y = y[class_indices]
             
-            csp = CSP(n_components=self.n_components, log=self.log, reg=self.csp_reg)
+            csp = CommonSpatialPatterns(n_components=self.n_components, log=self.log)
             csp.fit(subset_X, subset_y)
             self.csp_list.append(csp)
         

@@ -27,14 +27,14 @@ def main() :
     predict_parser.add_argument("task", type=int, choices=valid_tasks, help="Task ID")
     sub_parser.add_parser("score")
     args = parser.parse_args()
-#    try :
-    command = args.command
-    args = vars(args)
-    args.pop("command")
-    func_dict[command](**args)
-#    except Exception as e :
-#        print(str(e))
-#        parser.print_help()
+    try :
+        command = args.command
+        args = vars(args)
+        args.pop("command")
+        func_dict[command](**args)
+    except Exception as e :
+        print(str(e))
+        parser.print_help()
 
 if __name__ == "__main__" :
     main()
