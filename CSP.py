@@ -1,16 +1,16 @@
 import numpy as np
-
+from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin
 
-class CommonSpatialPatterns(TransformerMixin, BaseEstimator):
-    def __init__(self, n_components=4, log=None):
-        if not isinstance(n_components, int):
+class CommonSpatialPatterns(TransformerMixin, BaseEstimator) :
+    def __init__(self, n_components=4, log=None) :
+        if not isinstance(n_components, int) :
             raise ValueError("n_components must be an integer.")
         self.n_components = n_components
         self.log = log
 
-    def _check_Xy(self, X, y=None):
-        if not isinstance(X, np.ndarray):
+    def _check_Xy(self, X, y=None) :
+        if not isinstance(X, np.ndarray) :
             raise ValueError("X should be of type ndarray (got %s)." % type(X))
         if y is not None:
             if len(X) != len(y) or len(y) < 1:
@@ -18,30 +18,23 @@ class CommonSpatialPatterns(TransformerMixin, BaseEstimator):
         if X.ndim < 3:
             raise ValueError("X must have at least 3 dimensions.")
 
-    def fit(self, X, y):
+    def fit(self, X, y) :
         self._check_Xy(X, y)
 
         self._classes = np.unique(y)
         n_classes = len(self._classes)
-        if n_classes < 2:
-            raise ValueError("n_classes must be >= 2.")
-        if n_classes > 2 and self.component_order == "alternate":
-            raise ValueError(
-                "component_order='alternate' requires two "
-                "classes, but data contains {} classes; use "
-                "component_order='mutual_info' "
-                "instead.".format(n_classes)
-            )
+        if n_classes != 2 :
+            raise ValueError("n_classes must be equals 2.")
 
         covs = self._compute_covariance_matrices(X, y)
-        eigen_vectors, eigen_values = self._decompose_covs(covs)
-        ix = ix = np.argsort(np.abs(eigen_values - 0.5))[::-1]
+        eigen_values, eigen_vectors = linalg.eigh(covs[0], covs.sum(0))
+        ix = np.argsort(np.abs(eigen_values - 0.5))[::-1]
 
         eigen_vectors = eigen_vectors[:, ix]
 
         self.filters_ = eigen_vectors.T
 
-        pick_filters = self.filters_[: self.n_components]
+        pick_filters = self.filters_[:self.n_components]
         X = np.asarray([np.dot(pick_filters, epoch) for epoch in X])
 
         X = (X**2).mean(axis=2)
@@ -51,9 +44,9 @@ class CommonSpatialPatterns(TransformerMixin, BaseEstimator):
 
         return self
 
-    def transform(self, X):
-        if not isinstance(X, np.ndarray):
-            raise ValueError("X should be of type ndarray (got %s)." % type(X))
+    def transform(self, X) :
+        if not isinstance(X, np.ndarray) :
+            raise ValueError(f"X should be of type ndarray (got {type(X)}).")
         if self.filters_ is None:
             raise RuntimeError(
                 "No filters available. Please first fit CSP " "decomposition."
@@ -71,7 +64,7 @@ class CommonSpatialPatterns(TransformerMixin, BaseEstimator):
             X /= self.std_
         return X
     
-    def _compute_covariance_matrices(self, X, y):
+    def _compute_covariance_matrices(self, X, y) :
         _, n_channels, _ = X.shape
         covs = []
 
@@ -83,15 +76,7 @@ class CommonSpatialPatterns(TransformerMixin, BaseEstimator):
             covs.append(covar_matrix)
         return np.stack(covs)
     
-    def _calc_covariance(self, X, ddof=0):
+    def _calc_covariance(self, X, ddof=0) :
         X -= X.mean(axis=1)[:, None]
         N = X.shape[1]
         return np.dot(X, X.T.conj()) / float(N - ddof)
-
-    def _decompose_covs(self, covs):
-        from scipy import linalg
-
-        n_classes = len(covs)
-        if n_classes == 2:
-            eigen_values, eigen_vectors = linalg.eigh(covs[0], covs.sum(0))
-        return eigen_vectors, eigen_values
