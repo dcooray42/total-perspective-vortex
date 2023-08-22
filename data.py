@@ -1,5 +1,5 @@
 import numpy as np
-from constant import experiment_run, tasks
+from constant import experiment_run, exp_sub_89, tasks
 from mne import concatenate_epochs, Epochs, events_from_annotations, pick_types
 from mne.datasets import eegbci
 from mne.channels import make_standard_montage
@@ -20,8 +20,8 @@ class EegbciData() :
             data = read_raw_edf(f, preload=True)
             eegbci.standardize(data)
             data.set_montage(montage)
-            data.filter(7.0, 30.0, fir_design="firwin", skip_by_annotation="edge")
-            self.data_list.append(self._normalize_epochs(data, index + 1))
+            data.filter(7.0, 40.0, fir_design="firwin", skip_by_annotation="edge")
+            self.data_list.append(self._normalize_epochs(data, subject, index + 1))
 
     def get_exp_data(self, task_num : int = None) :
 
@@ -47,19 +47,18 @@ class EegbciData() :
         else :
             for value in range(0, 14) :
                 _get_data(x_train, x_test, y_train, y_test, self.data_list[value], min_length)
-            for value in range(0, 14) :
-                print(x_train[value].shape)
         return (np.concatenate(x_train),
                 np.concatenate(x_test) if task_num is not None else x_test,
                 np.concatenate(y_train),
                 np.concatenate(y_test) if task_num is not None else y_test)
     
-    def _normalize_epochs(self, data : Raw, index : int) :
+    def _normalize_epochs(self, data : Raw, subject : int, index : int) :
         subepoch_duration = 2.0
         subepochs = []
         all_subepochs = []
         epochs_train = None
         picks = pick_types(data.info, meg=False, eeg=True, stim=False, eog=False, exclude="bads")
+        exp_run = exp_sub_89[index] if subject == 89 and index <= 2 else experiment_run[index]
     
         if index <= 2 :
             for start_time in np.arange(0.0, data.times[-1], subepoch_duration):
@@ -70,10 +69,10 @@ class EegbciData() :
                 subepochs.append(subraw)
     
             for subepoch in subepochs:
-                events, _ = events_from_annotations(subepoch, event_id=experiment_run[index]["events"])
+                events, _ = events_from_annotations(subepoch, event_id=exp_run["events"])
                 subepoch_epochs = Epochs(subepoch,
                                          events,
-                                         event_id=experiment_run[index]["event_id"],
+                                         event_id=exp_run["event_id"],
                                          tmin=0,
                                          tmax=subepoch_duration,
                                          proj=True,
@@ -88,10 +87,10 @@ class EegbciData() :
             epochs_train = concat_epochs.copy().crop(tmin=1.0, tmax=2.0)
         else :
             tmin, tmax = -1.0, 4.0
-            events, _ = events_from_annotations(data, event_id=experiment_run[index]["events"])
+            events, _ = events_from_annotations(data, event_id=exp_run["events"])
             all_epochs = Epochs(data,
                                 events,
-                                event_id=experiment_run[index]["event_id"],
+                                event_id=exp_run["event_id"],
                                 tmin=tmin,
                                 tmax=tmax,
                                 proj=True,

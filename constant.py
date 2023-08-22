@@ -9,52 +9,72 @@ exp_2 = {"events" : {
             "T0" : 1
         },
         "event_id" : {
-            "rest_eyes_open" : 1
+            "rest_eyes_close" : 1
         }
 }
 exp_3 = {"events" : {
-            "T0" : 2,
-            "T1" : 3,
-            "T2" : 4
+            "T0" : 10,
+            "T1" : 2,
+            "T2" : 3
         },
         "event_id" : {
-            "rest" : 2,
-            "do_open_close_left_fist" : 3,
-            "do_open_close_right_fist" : 4
+            "rest" : 10,
+            "do_open_close_left_fist" : 2,
+            "do_open_close_right_fist" : 3
         }
 }
 exp_4 = {"events" : {
-            "T0" : 2,
-            "T1" : 5,
-            "T2" : 6
+            "T0" : 10,
+            "T1" : 4,
+            "T2" : 5
         },
         "event_id" : {
-            "rest" : 2,
-            "imagine_open_close_left_fist" : 5,
-            "imagine_open_close_right_fist" : 6
+            "rest" : 10,
+            "imagine_open_close_left_fist" : 4,
+            "imagine_open_close_right_fist" : 5
         }
 }
 exp_5 = {"events" : {
-            "T0" : 2,
-            "T1" : 7,
-            "T2" : 8
+            "T0" : 10,
+            "T1" : 6,
+            "T2" : 7
         },
         "event_id" : {
-            "rest" : 2,
-            "do_open_close_both_fist" : 7,
-            "do_open_close_both_feet" : 8
+            "rest" : 10,
+            "do_open_close_both_fist" : 6,
+            "do_open_close_both_feet" : 7
         }
 }
 exp_6 = {"events" : {
-            "T0" : 2,
-            "T1" : 9,
-            "T2" : 10
+            "T0" : 10,
+            "T1" : 8,
+            "T2" : 9
         },
         "event_id" : {
-            "rest" : 2,
-            "imagine_open_close_both_fist" : 9,
-            "imagine_open_close_both_feet" : 10
+            "rest" : 10,
+            "imagine_open_close_both_fist" : 8,
+            "imagine_open_close_both_feet" : 9
         }
+}
+exp_sub_89 = {
+    1 : {
+            "events" : {
+                "T0" : 0,
+                "T1" : 0
+            },
+            "event_id" : {
+            "rest_eyes_open" : 0
+            }
+        },
+    2 : {
+            "events" : {
+                "T0" : 1,
+                "T1" : 1
+        },
+        "event_id" : {
+            "rest_eyes_open" : 1
+        }
+}
 }
 
 experiment_run = {

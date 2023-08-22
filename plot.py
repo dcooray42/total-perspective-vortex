@@ -23,7 +23,7 @@ def plot(subject, experiment) :
     raw_data.compute_psd(fmax=fmax).plot(average=True, picks="data", exclude="bads")
     plt.show()
     raw_data.set_eeg_reference("average", projection=True)
-    raw_data.filter(l_freq=7, h_freq=30)
+    raw_data.filter(l_freq=7, h_freq=40)
     raw_data.plot(n_channels=64, color="red", remove_dc=False)
     plt.show()
     raw_data.compute_psd(fmax=fmax).plot(picks="data", exclude="bads")

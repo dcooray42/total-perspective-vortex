@@ -10,12 +10,12 @@ from sklearn.pipeline import Pipeline
 def score() :
     mne.set_log_level("CRITICAL")
     mean_exp_accuracy = [[] for _ in range(0, 6)]
-    for subject in range(88, 110) :
+    for subject in range(1, 110) :
         data = EegbciData(subject)
         x_train, x_test, y_train, y_test = data.get_exp_data()
         pair_val = combinations(range(1, 11), 2)
         csp_pairwise = CSPPairwise(pair_val)
-        rfc = RandomForestClassifier()
+        rfc = RandomForestClassifier(random_state=42)
 
         pipeline = Pipeline([
             ("csp", csp_pairwise),
