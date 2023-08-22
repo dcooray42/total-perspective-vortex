@@ -29,9 +29,10 @@ class EegbciData() :
                       x_test : np.ndarray,
                       y_train : np.ndarray,
                       y_test : np.ndarray,
-                      exp_data) :
-            x_train.append(exp_data[0])
-            x_test.append(exp_data[1])
+                      exp_data : np.ndarray,
+                      min_length : int) :
+            x_train.append(exp_data[0][:, :, :min_length])
+            x_test.append(exp_data[1][:, :, :min_length])
             y_train.append(exp_data[2])
             y_test.append(exp_data[3])
 
@@ -39,27 +40,32 @@ class EegbciData() :
         x_test = []
         y_train = []
         y_test = []
+        min_length = min(data[0].shape[2] for data in self.data_list)
         if task_num is not None :
             for value in tasks[task_num] :
-                _get_data(x_train, x_test, y_train, y_test, self.data_list[value])
+                _get_data(x_train, x_test, y_train, y_test, self.data_list[value], min_length)
         else :
-            for value in range(1, 15) :
-                _get_data(x_train, x_test, y_train, y_test, self.data_list[value])
+            for value in range(0, 14) :
+                _get_data(x_train, x_test, y_train, y_test, self.data_list[value], min_length)
+            for value in range(0, 14) :
+                print(x_train[value].shape)
         return (np.concatenate(x_train),
-                np.concatenate(x_test),
+                np.concatenate(x_test) if task_num is not None else x_test,
                 np.concatenate(y_train),
-                np.concatenate(y_test))
+                np.concatenate(y_test) if task_num is not None else y_test)
     
     def _normalize_epochs(self, data : Raw, index : int) :
-        subepoch_duration = 2
+        subepoch_duration = 2.0
         subepochs = []
         all_subepochs = []
         epochs_train = None
         picks = pick_types(data.info, meg=False, eeg=True, stim=False, eog=False, exclude="bads")
     
         if index <= 2 :
-            for start_time in range(0, int(data.times[-1]), subepoch_duration):
-                end_time = start_time + subepoch_duration
+            for start_time in np.arange(0.0, data.times[-1], subepoch_duration):
+                end_time = (start_time + subepoch_duration
+                            if start_time + subepoch_duration < data.times[-1]
+                            else data.times[-1])
                 subraw = data.copy().crop(tmin=start_time, tmax=end_time)
                 subepochs.append(subraw)
     
@@ -79,7 +85,6 @@ class EegbciData() :
                                          verbose="Error")
                 all_subepochs.append(subepoch_epochs)
             concat_epochs = concatenate_epochs(all_subepochs)
-            epochs_train = concat_epochs
             epochs_train = concat_epochs.copy().crop(tmin=1.0, tmax=2.0)
         else :
             tmin, tmax = -1.0, 4.0
@@ -96,7 +101,6 @@ class EegbciData() :
                                 preload=True,
                                 reject_by_annotation=True,
                                 verbose="Error")
-            epochs_train = all_epochs
             epochs_train = all_epochs.copy().crop(tmin=1.0, tmax=2.0)
         labels = epochs_train.events[:, -1]
         return train_test_split(epochs_train.get_data(), labels, test_size=0.2, random_state=self.rs)
